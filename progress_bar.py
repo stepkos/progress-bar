@@ -1,13 +1,7 @@
-from print_blocker import PrintBlocker
-
-
 class ProgressBar:
 
     hide_coursor = lambda self: print('\033[?25l', end='')
     show_coursor = lambda self: print('\033[?25h', end='')
-    block_print = lambda self: PrintBlocker.block(globals())
-    unlock_print = lambda self: PrintBlocker.unlock(globals())
-    display_print_bufor = lambda self: PrintBlocker.print_bufor()
 
 
     def __init__(self, length: int = 20,
@@ -24,21 +18,15 @@ class ProgressBar:
     
     def __enter__(self):
         self.hide_coursor()
-        self.block_print()
         return self
 
 
     def __exit__(self, *args, **kwargs):
         self.show_coursor()
-        self.unlock_print()
-        self.display_print_bufor()
 
     
     def __getitem__(self, item):
         if item > self.length:
-            self.unlock_print()
-            print()
-            self.block_print()
             raise StopIteration()
 
         line = '{load_char} {_open}{fill}{unfill}{close} {percent}%'.format(
@@ -50,9 +38,7 @@ class ProgressBar:
             percent = item * 100 // self.length
         )
 
-        self.unlock_print()
         print(line, end='\r')
-        self.block_print()
         
 
 
@@ -60,7 +46,5 @@ if __name__ == '__main__':
     import time
     
     with ProgressBar(fill='=', fill_other_first='>', unfill='.') as pb:
-        print('Hello')
         for i in pb:
-            print('Im interapting now!')
             time.sleep(.2)

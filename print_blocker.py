@@ -1,7 +1,7 @@
 class PrintBlocker:
 
     global print
-    oryginal_print = print
+    orginal_print = print
     bufor = []
 
     @staticmethod
@@ -14,7 +14,7 @@ class PrintBlocker:
 
     @staticmethod
     def unlock(env):
-        env['print'] = PrintBlocker.oryginal_print
+        env['print'] = PrintBlocker.orginal_print
 
     @staticmethod
     def get_bufor(clear_bufor = True):
