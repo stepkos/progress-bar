@@ -9,14 +9,12 @@ class PrintBlocker:
         PrintBlocker.bufor.append((args, kwargs))
 
     @staticmethod
-    def block():
-        global print
-        print = PrintBlocker.fake_print
+    def block(env):
+        env['print'] = PrintBlocker.fake_print
 
     @staticmethod
-    def unlock():
-        global print
-        print = PrintBlocker.oryginal_print
+    def unlock(env):
+        env['print'] = PrintBlocker.oryginal_print
 
     @staticmethod
     def get_bufor(clear_bufor = True):
@@ -25,18 +23,24 @@ class PrintBlocker:
             PrintBlocker.bufor.clear()
         return bufor
 
+    @staticmethod
+    def print_bufor(clear_bufor = True):
+        for args, kwargs in PrintBlocker.get_bufor(clear_bufor):
+            print(*args, **kwargs)
+
 
 class PrintBlockerContextManager:
-    def __init__(self, print_bufor = False, clear_bufor = True):
+    def __init__(self, env, print_bufor = False, clear_bufor = True):
+        self.env = env
         self.print_bufor = print_bufor
         self.clear_bufor = clear_bufor
 
     def __enter__(self):
-        PrintBlocker.block()
+        PrintBlocker.block(self.env)
         return self
 
     def __exit__(self, *args, **kwargs):
-        PrintBlocker.unlock()
+        PrintBlocker.unlock(self.env)
         bufor = PrintBlocker.get_bufor(self.clear_bufor)
         if self.print_bufor:
             for _args, _kwargs in bufor:
@@ -46,7 +50,7 @@ class PrintBlockerContextManager:
 
 if __name__ == '__main__':
     print(1)
-    with PrintBlockerContextManager(True) as pb:
+    with PrintBlockerContextManager(globals(), True) as pb:
         print(2)
         print(3)
     print(4)
@@ -54,10 +58,10 @@ if __name__ == '__main__':
     print('-'*20)
 
     print(1)
-    PrintBlocker.block()
+    PrintBlocker.block(globals())
     print(2)
     print(3)
-    PrintBlocker.unlock()
+    PrintBlocker.unlock(globals())
     print(4)
     bufor = PrintBlocker.get_bufor(False)
     for a, k in bufor:
